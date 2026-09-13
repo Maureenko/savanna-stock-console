@@ -4,14 +4,16 @@ import { Suspense } from 'react';
 
 import { ProtectedRoute, useAuth } from '@/components/auth';
 import { EmptyState, ErrorState, LoadingState } from '@/components/common';
-import { StockGrid } from '@/components/stock';
+import { SearchInput, StockGrid } from '@/components/stock';
 import { Button } from '@/components/ui/button';
 import { useProducts, useURLState } from '@/hooks';
 
 function StockListContent() {
   const { user, logout } = useAuth();
   const { resetFilters, search, category } = useURLState();
-  const { data, isLoading, isError, error, refetch, isEmpty } = useProducts();
+  const { data, isLoading, isError, error, refetch, isEmpty, isFetching } = useProducts();
+
+  const hasActiveFilters = search || category;
 
   return (
     <div className="min-h-screen p-4 sm:p-6 lg:p-8">
@@ -30,13 +32,23 @@ function StockListContent() {
       </header>
 
       <main>
-        {/* Filters will go here in Task 7-8 */}
-        <div className="mb-6">
+        {/* Search and Filters */}
+        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
+          <SearchInput />
+          {/* Category and Sort will be added in Task 8 */}
+        </div>
+
+        {/* Status bar */}
+        <div className="mb-4 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             {data?.total ?? 0} items total
             {search && ` • Searching for "${search}"`}
             {category && ` • Category: ${category}`}
           </p>
+          {/* Show subtle loading indicator when refetching */}
+          {isFetching && !isLoading && (
+            <span className="text-sm text-muted-foreground">Updating...</span>
+          )}
         </div>
 
         {/* Loading State */}
@@ -52,7 +64,7 @@ function StockListContent() {
 
         {/* Empty State */}
         {!isLoading && !isError && isEmpty && (
-          <EmptyState onReset={search || category ? resetFilters : undefined} />
+          <EmptyState onReset={hasActiveFilters ? resetFilters : undefined} />
         )}
 
         {/* Product Grid */}
