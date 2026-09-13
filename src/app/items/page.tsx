@@ -4,7 +4,13 @@ import { Suspense } from 'react';
 
 import { ProtectedRoute, useAuth } from '@/components/auth';
 import { EmptyState, ErrorState, LoadingState } from '@/components/common';
-import { CategorySelect, Pagination, SearchInput, SortSelect, StockGrid } from '@/components/stock';
+import {
+  CategorySelect,
+  Pagination,
+  SearchInput,
+  SortSelect,
+  StockTable,
+} from '@/components/stock';
 import { Button } from '@/components/ui/button';
 import { useProducts, useURLState } from '@/hooks';
 
@@ -71,10 +77,10 @@ function StockListContent() {
           <EmptyState onReset={hasActiveFilters ? resetFilters : undefined} />
         )}
 
-        {/* Product Grid */}
+        {/* Product Table */}
         {!isLoading && !isError && data && data.products.length > 0 && (
           <>
-            <StockGrid products={data.products} />
+            <StockTable products={data.products} />
             <Pagination totalItems={totalItems} totalPages={totalPages} />
           </>
         )}
