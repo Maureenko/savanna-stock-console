@@ -62,7 +62,7 @@ function ItemDetailContent() {
         <div className="space-y-4">
           <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
             <Image
-              src={product.images[0] || product.thumbnail}
+              src={product.images?.[0] || product.thumbnail}
               alt={product.title}
               fill
               className="object-cover"
@@ -70,7 +70,7 @@ function ItemDetailContent() {
               sizes="(max-width: 1024px) 100vw, 50vw"
             />
           </div>
-          {product.images.length > 1 && (
+          {product.images && product.images.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
               {product.images.slice(0, 4).map((image, index) => (
                 <div
@@ -94,35 +94,37 @@ function ItemDetailContent() {
         <div className="space-y-6">
           <div>
             <p className="mb-2 text-sm capitalize text-muted-foreground">
-              {product.category.replace(/-/g, ' ')} • {product.brand}
+              {product.category?.replace(/-/g, ' ')} {product.brand && `• ${product.brand}`}
             </p>
             <h1 className="text-3xl font-bold">{product.title}</h1>
           </div>
 
           <div className="flex items-center gap-4">
-            <span className="text-3xl font-bold">${product.price.toFixed(2)}</span>
-            {product.discountPercentage > 0 && (
+            <span className="text-3xl font-bold">${product.price?.toFixed(2) ?? '0.00'}</span>
+            {product.discountPercentage && product.discountPercentage > 0 && (
               <Badge variant="secondary">{product.discountPercentage.toFixed(0)}% off</Badge>
             )}
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="flex items-center">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star
-                  key={i}
-                  className={`h-5 w-5 ${
-                    i < Math.round(product.rating)
-                      ? 'fill-yellow-400 text-yellow-400'
-                      : 'text-muted'
-                  }`}
-                />
-              ))}
+          {product.rating && (
+            <div className="flex items-center gap-2">
+              <div className="flex items-center">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Star
+                    key={i}
+                    className={`h-5 w-5 ${
+                      i < Math.round(product.rating)
+                        ? 'fill-yellow-400 text-yellow-400'
+                        : 'text-muted'
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-sm text-muted-foreground">({product.rating.toFixed(1)})</span>
             </div>
-            <span className="text-sm text-muted-foreground">({product.rating.toFixed(1)})</span>
-          </div>
+          )}
 
-          <p className="text-muted-foreground">{product.description}</p>
+          {product.description && <p className="text-muted-foreground">{product.description}</p>}
 
           {/* Stock Card - Prominent for clinic use case */}
           <Card className="border-2">
@@ -134,21 +136,25 @@ function ItemDetailContent() {
                 <span className="font-medium">Current Stock</span>
                 <div className="flex items-center gap-2">
                   <span className="text-2xl font-bold">{product.stock}</span>
-                  <Badge
-                    variant={isOutOfStock ? 'destructive' : isLowStock ? 'secondary' : 'default'}
-                    className={
-                      !isOutOfStock && !isLowStock
-                        ? 'bg-green-100 text-green-800 hover:bg-green-100'
-                        : ''
-                    }
-                  >
-                    {product.availabilityStatus}
-                  </Badge>
+                  {product.availabilityStatus && (
+                    <Badge
+                      variant={isOutOfStock ? 'destructive' : isLowStock ? 'secondary' : 'default'}
+                      className={
+                        !isOutOfStock && !isLowStock
+                          ? 'bg-green-100 text-green-800 hover:bg-green-100'
+                          : ''
+                      }
+                    >
+                      {product.availabilityStatus}
+                    </Badge>
+                  )}
                 </div>
               </div>
               <div className="text-sm text-muted-foreground">
-                <p>SKU: {product.sku}</p>
-                <p>Min Order: {product.minimumOrderQuantity} units</p>
+                {product.sku && <p>SKU: {product.sku}</p>}
+                {product.minimumOrderQuantity && (
+                  <p>Min Order: {product.minimumOrderQuantity} units</p>
+                )}
               </div>
 
               {/* Stock Correction Form */}
@@ -156,27 +162,35 @@ function ItemDetailContent() {
             </CardContent>
           </Card>
 
-          {/* Additional Info */}
+          {/* Additional Info - only show if data exists */}
           <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <h3 className="mb-2 font-semibold">Shipping</h3>
-              <p className="text-sm text-muted-foreground">{product.shippingInformation}</p>
-            </div>
-            <div>
-              <h3 className="mb-2 font-semibold">Warranty</h3>
-              <p className="text-sm text-muted-foreground">{product.warrantyInformation}</p>
-            </div>
-            <div>
-              <h3 className="mb-2 font-semibold">Return Policy</h3>
-              <p className="text-sm text-muted-foreground">{product.returnPolicy}</p>
-            </div>
-            <div>
-              <h3 className="mb-2 font-semibold">Dimensions</h3>
-              <p className="text-sm text-muted-foreground">
-                {product.dimensions.width} × {product.dimensions.height} ×{' '}
-                {product.dimensions.depth} cm
-              </p>
-            </div>
+            {product.shippingInformation && (
+              <div>
+                <h3 className="mb-2 font-semibold">Shipping</h3>
+                <p className="text-sm text-muted-foreground">{product.shippingInformation}</p>
+              </div>
+            )}
+            {product.warrantyInformation && (
+              <div>
+                <h3 className="mb-2 font-semibold">Warranty</h3>
+                <p className="text-sm text-muted-foreground">{product.warrantyInformation}</p>
+              </div>
+            )}
+            {product.returnPolicy && (
+              <div>
+                <h3 className="mb-2 font-semibold">Return Policy</h3>
+                <p className="text-sm text-muted-foreground">{product.returnPolicy}</p>
+              </div>
+            )}
+            {product.dimensions && (
+              <div>
+                <h3 className="mb-2 font-semibold">Dimensions</h3>
+                <p className="text-sm text-muted-foreground">
+                  {product.dimensions.width} × {product.dimensions.height} ×{' '}
+                  {product.dimensions.depth} cm
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
