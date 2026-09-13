@@ -4,14 +4,15 @@ import { Suspense } from 'react';
 
 import { ProtectedRoute, useAuth } from '@/components/auth';
 import { EmptyState, ErrorState, LoadingState } from '@/components/common';
-import { CategorySelect, SearchInput, SortSelect, StockGrid } from '@/components/stock';
+import { CategorySelect, Pagination, SearchInput, SortSelect, StockGrid } from '@/components/stock';
 import { Button } from '@/components/ui/button';
 import { useProducts, useURLState } from '@/hooks';
 
 function StockListContent() {
   const { user, logout } = useAuth();
   const { resetFilters, search, category } = useURLState();
-  const { data, isLoading, isError, error, refetch, isEmpty, isFetching } = useProducts();
+  const { data, isLoading, isError, error, refetch, isEmpty, isFetching, totalItems, totalPages } =
+    useProducts();
 
   const hasActiveFilters = search || category;
 
@@ -44,7 +45,7 @@ function StockListContent() {
         {/* Status bar */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {data?.total ?? 0} items
+            {totalItems} items
             {search && ` • Searching: "${search}"`}
             {category && ` • ${category.replace(/-/g, ' ')}`}
           </p>
@@ -72,10 +73,11 @@ function StockListContent() {
 
         {/* Product Grid */}
         {!isLoading && !isError && data && data.products.length > 0 && (
-          <StockGrid products={data.products} />
+          <>
+            <StockGrid products={data.products} />
+            <Pagination totalItems={totalItems} totalPages={totalPages} />
+          </>
         )}
-
-        {/* Pagination will go here in Task 9 */}
       </main>
     </div>
   );
