@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from 'next/font/google';
 
 import { AuthProvider } from '@/components/auth';
 import { QueryProvider } from '@/components/providers';
+import { Toaster } from '@/components/ui/sonner';
 
 import './globals.css';
 
@@ -32,6 +33,7 @@ export default function RootLayout({
         <QueryProvider>
           <AuthProvider>{children}</AuthProvider>
         </QueryProvider>
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );

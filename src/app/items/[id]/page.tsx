@@ -7,6 +7,7 @@ import { useParams, useSearchParams } from 'next/navigation';
 
 import { ProtectedRoute } from '@/components/auth';
 import { ErrorState } from '@/components/common';
+import { StockCorrectionForm } from '@/components/stock';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -150,7 +151,8 @@ function ItemDetailContent() {
                 <p>Min Order: {product.minimumOrderQuantity} units</p>
               </div>
 
-              {/* Stock Correction will go here in Task 11 */}
+              {/* Stock Correction Form */}
+              <StockCorrectionForm product={product} />
             </CardContent>
           </Card>
 
