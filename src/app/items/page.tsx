@@ -4,7 +4,7 @@ import { Suspense } from 'react';
 
 import { ProtectedRoute, useAuth } from '@/components/auth';
 import { EmptyState, ErrorState, LoadingState } from '@/components/common';
-import { SearchInput, StockGrid } from '@/components/stock';
+import { CategorySelect, SearchInput, SortSelect, StockGrid } from '@/components/stock';
 import { Button } from '@/components/ui/button';
 import { useProducts, useURLState } from '@/hooks';
 
@@ -35,15 +35,18 @@ function StockListContent() {
         {/* Search and Filters */}
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
           <SearchInput />
-          {/* Category and Sort will be added in Task 8 */}
+          <div className="flex gap-2">
+            <CategorySelect />
+            <SortSelect />
+          </div>
         </div>
 
         {/* Status bar */}
         <div className="mb-4 flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            {data?.total ?? 0} items total
-            {search && ` • Searching for "${search}"`}
-            {category && ` • Category: ${category}`}
+            {data?.total ?? 0} items
+            {search && ` • Searching: "${search}"`}
+            {category && ` • ${category.replace(/-/g, ' ')}`}
           </p>
           {/* Show subtle loading indicator when refetching */}
           {isFetching && !isLoading && (
