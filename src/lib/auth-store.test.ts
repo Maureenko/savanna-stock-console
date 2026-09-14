@@ -73,6 +73,7 @@ describe('authStore', () => {
         firstName: 'Test',
         lastName: 'User',
         image: 'https://example.com/avatar.jpg',
+        gender: 'female',
       };
 
       authStore.setUser(user);
