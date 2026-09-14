@@ -1,8 +1,8 @@
 'use client';
 
-import { Eye, Pencil } from 'lucide-react';
+import { Pencil } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -24,10 +24,23 @@ interface StockTableProps {
 }
 
 export function StockTable({ products }: StockTableProps) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleEditStock = (product: Product) => {
+  // Build item detail link with preserved search params
+  const getItemLink = (productId: number) => {
+    const params = searchParams.toString();
+    return params ? `/items/${productId}?${params}` : `/items/${productId}`;
+  };
+
+  const handleRowClick = (productId: number) => {
+    router.push(getItemLink(productId));
+  };
+
+  const handleEditStock = (e: React.MouseEvent, product: Product) => {
+    e.stopPropagation(); // Prevent row click navigation
     setSelectedProduct(product);
     setIsModalOpen(true);
   };
@@ -75,38 +88,31 @@ export function StockTable({ products }: StockTableProps) {
               return (
                 <TableRow
                   key={product.id}
+                  onClick={() => handleRowClick(product.id)}
                   className={cn(
-                    'transition-colors',
+                    'cursor-pointer transition-colors',
                     isEvenRow ? 'bg-white' : 'bg-savannah-lime/10',
                     'hover:bg-savannah-lime/20'
                   )}
                 >
                   {/* Image */}
                   <TableCell className="py-1 sm:py-1.5">
-                    <Link
-                      href={`/items/${product.id}`}
-                      className="block rounded focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-                    >
-                      <div className="relative h-8 w-8 overflow-hidden rounded bg-muted sm:h-10 sm:w-10">
-                        <Image
-                          src={product.thumbnail}
-                          alt={product.title}
-                          fill
-                          className="object-cover"
-                          sizes="2.5rem"
-                        />
-                      </div>
-                    </Link>
+                    <div className="relative h-8 w-8 overflow-hidden rounded bg-muted sm:h-10 sm:w-10">
+                      <Image
+                        src={product.thumbnail}
+                        alt={product.title}
+                        fill
+                        className="object-cover"
+                        sizes="2.5rem"
+                      />
+                    </div>
                   </TableCell>
 
                   {/* Product Name */}
                   <TableCell className="max-w-[7.5rem] py-1 sm:max-w-none sm:py-1.5">
-                    <Link
-                      href={`/items/${product.id}`}
-                      className="rounded text-xs font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:text-sm"
-                    >
-                      <span className="line-clamp-1">{product.title}</span>
-                    </Link>
+                    <span className="line-clamp-1 text-xs font-medium sm:text-sm">
+                      {product.title}
+                    </span>
                     {/* Show category on mobile */}
                     <p className="truncate text-[0.6rem] capitalize text-muted-foreground md:hidden">
                       {product.category.replace(/-/g, ' ')}
@@ -158,16 +164,9 @@ export function StockTable({ products }: StockTableProps) {
 
                   {/* Quick Actions */}
                   <TableCell className="py-1 sm:py-1.5">
-                    <div className="flex items-center justify-center gap-0.5">
-                      <Link
-                        href={`/items/${product.id}`}
-                        className="inline-flex h-6 w-6 items-center justify-center rounded transition-colors hover:bg-savannah-purple/10 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:h-7 sm:w-7"
-                        aria-label={`View details for ${product.title}`}
-                      >
-                        <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5" aria-hidden="true" />
-                      </Link>
+                    <div className="flex items-center justify-center">
                       <button
-                        onClick={() => handleEditStock(product)}
+                        onClick={(e) => handleEditStock(e, product)}
                         className="inline-flex h-6 w-6 items-center justify-center rounded transition-colors hover:bg-savannah-purple/10 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 sm:h-7 sm:w-7"
                         aria-label={`Edit stock for ${product.title}`}
                       >

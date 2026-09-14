@@ -1,6 +1,7 @@
 'use client';
 
 import { ChevronRight, LayoutGrid, Package, X } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -15,13 +16,24 @@ interface SidebarProps {
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const { data: categories, isLoading } = useCategories();
   const { category: activeCategory, setCategory } = useURLState();
+  const pathname = usePathname();
+  const router = useRouter();
+
+  // Check if we're on a detail page
+  const isDetailPage = pathname.startsWith('/items/') && pathname !== '/items';
 
   const handleCategoryClick = (categorySlug: string) => {
-    // If clicking the active category, clear it
-    if (activeCategory === categorySlug) {
-      setCategory('');
+    // If on detail page, navigate to items list with category filter
+    if (isDetailPage) {
+      const url = categorySlug ? `/items?category=${categorySlug}` : '/items';
+      router.push(url);
     } else {
-      setCategory(categorySlug);
+      // If clicking the active category, clear it
+      if (activeCategory === categorySlug) {
+        setCategory('');
+      } else {
+        setCategory(categorySlug);
+      }
     }
     // Close sidebar on mobile after selection
     if (window.innerWidth < 1024) {
@@ -30,7 +42,11 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
   };
 
   const handleAllItemsClick = () => {
-    setCategory('');
+    if (isDetailPage) {
+      router.push('/items');
+    } else {
+      setCategory('');
+    }
     if (window.innerWidth < 1024) {
       onClose();
     }

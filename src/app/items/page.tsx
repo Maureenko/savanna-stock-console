@@ -35,13 +35,7 @@ function StockListContent() {
         </div>
         {/* Status bar */}
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-gray-100 pt-3">
-          <p className="text-xs text-muted-foreground sm:text-sm">
-            {totalItems} items
-            {search && <span className="hidden sm:inline"> • Searching: &quot;{search}&quot;</span>}
-            {search && <span className="sm:hidden"> • &quot;{search}&quot;</span>}
-            {category && ` • ${category.replace(/-/g, ' ')}`}
-            {stockStatus && ` • ${stockStatus}`}
-          </p>
+          <p className="text-xs text-muted-foreground sm:text-sm">{totalItems} items</p>
           {isFetching && !isLoading && (
             <span className="text-xs text-muted-foreground">Updating...</span>
           )}

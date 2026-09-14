@@ -1,5 +1,8 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -10,13 +13,18 @@ interface StockCardProps {
 }
 
 export function StockCard({ product }: StockCardProps) {
+  const searchParams = useSearchParams();
   const isLowStock = product.availabilityStatus === 'Low Stock';
   const isOutOfStock = product.availabilityStatus === 'Out of Stock';
 
+  // Build item detail link with preserved search params
+  const params = searchParams.toString();
+  const itemLink = params ? `/items/${product.id}?${params}` : `/items/${product.id}`;
+
   return (
     <Link
-      href={`/items/${product.id}`}
-      className="block focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-lg"
+      href={itemLink}
+      className="block rounded-lg focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
     >
       <Card className="h-full transition-shadow hover:shadow-md">
         <CardHeader className="p-0">
