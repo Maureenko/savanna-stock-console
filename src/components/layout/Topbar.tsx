@@ -28,7 +28,7 @@ export function Topbar({ onMenuClick, isSidebarOpen }: TopbarProps) {
 
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-savannah-purple/30 bg-gradient-to-r from-white to-savannah-purple-light px-3 text-white backdrop-blur-sm sm:h-16 sm:px-4 lg:px-6">
-      {/* Left side - Logo */}
+      {/* Left side - Logo and menu (desktop) */}
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Logo - large */}
         <div className="relative h-10 w-48 overflow-hidden sm:h-12 sm:w-56">
@@ -42,9 +42,9 @@ export function Topbar({ onMenuClick, isSidebarOpen }: TopbarProps) {
           />
         </div>
 
-        {/* Menu button */}
+        {/* Menu button - desktop only (left side) */}
         <button
-          className="ml-2 h-8 w-8 text-savannah-purple hover:text-savannah-purple/70 sm:h-9 sm:w-9"
+          className="ml-2 hidden h-8 w-8 text-savannah-purple hover:text-savannah-purple/70 sm:h-9 sm:w-9 lg:block"
           onClick={onMenuClick}
           aria-label={isSidebarOpen ? 'Close menu' : 'Open menu'}
           aria-expanded={isSidebarOpen}
@@ -53,8 +53,18 @@ export function Topbar({ onMenuClick, isSidebarOpen }: TopbarProps) {
         </button>
       </div>
 
-      {/* Right side - Account info */}
-      <div className="flex items-center gap-1 sm:gap-2">
+      {/* Right side - Menu (mobile/tablet) and Account info */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Menu button - mobile/tablet only (right side) */}
+        <button
+          className="flex h-8 w-8 items-center justify-center text-savannah-purple hover:text-savannah-purple/70 sm:h-9 sm:w-9 lg:hidden"
+          onClick={onMenuClick}
+          aria-label={isSidebarOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={isSidebarOpen}
+        >
+          <Menu className="h-5 w-5 sm:h-6 sm:w-6" />
+        </button>
+
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-2 rounded-lg p-1.5 transition-colors hover:bg-white/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/50 sm:gap-3 sm:p-2">

@@ -21,12 +21,12 @@ function StockListContent() {
   const hasActiveFilters = search || category || stockStatus;
 
   return (
-    <div className="min-h-full w-full max-w-full overflow-x-hidden bg-savannah-purple/5 p-3 sm:p-4 md:p-6">
+    <div className="min-h-full bg-savannah-purple/5 p-2 sm:p-4 md:p-6">
       {/* Dashboard Stats */}
       <DashboardStats />
 
       {/* Search and Filters Card */}
-      <div className="mb-3 rounded-lg bg-white p-3 shadow-sm sm:mb-4 sm:rounded-xl sm:p-4">
+      <div className="mb-2 rounded-lg bg-white p-2 shadow-sm sm:mb-4 sm:rounded-xl sm:p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
           <SearchInput />
           <div className="w-full sm:w-auto">
@@ -66,9 +66,11 @@ function StockListContent() {
 
       {/* Product Table Card */}
       {!isLoading && !isError && data && data.products.length > 0 && (
-        <div className="overflow-hidden rounded-lg bg-white p-3 shadow-sm sm:rounded-xl sm:p-4">
-          <div className="overflow-x-auto">
-            <StockTable products={data.products} />
+        <div className="rounded-lg bg-white p-2 shadow-sm sm:rounded-xl sm:p-4">
+          <div className="-mx-2 overflow-x-auto sm:mx-0">
+            <div className="inline-block min-w-full align-middle">
+              <StockTable products={data.products} />
+            </div>
           </div>
           <Pagination totalItems={totalItems} totalPages={totalPages} />
         </div>

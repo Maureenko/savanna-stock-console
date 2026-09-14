@@ -39,7 +39,7 @@ export function StockTable({ products }: StockTableProps) {
 
   return (
     <>
-      <div className="overflow-hidden rounded-lg">
+      <div className="rounded-lg">
         <Table>
           <TableHeader>
             <TableRow className="border-b-2 border-savannah-purple/20 bg-savannah-purple/5 hover:bg-savannah-purple/5">
