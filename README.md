@@ -520,11 +520,11 @@ The simulated activity log in `ActivityLog.tsx`. I designed the workaround conce
 
 ### 4.7 Actual Time Spent
 
-- Design: ~2 hours
-- Build: ~5 hours
+- Design: ~3 hours
+- Build: ~12 hours
 - Deployment/CI: ~1 hour
 - Documentation: ~2 hours
-- **Total: ~10 hours**
+- **Total: ~18 hours**
 
 ---
 
