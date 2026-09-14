@@ -26,7 +26,7 @@ export function CategorySelect() {
         Category
       </Label>
       <Select value={category || 'all'} onValueChange={handleValueChange} disabled={isLoading}>
-        <SelectTrigger id="category-select" className="w-full sm:w-[180px]">
+        <SelectTrigger id="category-select" className="w-full sm:w-[11.25rem]">
           <SelectValue placeholder="All Categories" />
         </SelectTrigger>
         <SelectContent>

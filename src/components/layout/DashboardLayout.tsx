@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 
 import { ProtectedRoute } from '@/components/auth';
+
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
-import { cn } from '@/lib/utils';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -35,19 +35,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Topbar */}
         <Topbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} isSidebarOpen={sidebarOpen} />
 
-        <div className="flex flex-1">
+        <div className="flex flex-1 overflow-hidden">
           {/* Sidebar */}
           <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
           {/* Main content */}
-          <main
-            className={cn(
-              'flex-1 transition-all duration-200',
-              sidebarOpen ? 'lg:ml-0' : 'lg:ml-0'
-            )}
-          >
-            {children}
-          </main>
+          <main className="flex-1 overflow-x-hidden overflow-y-auto">{children}</main>
         </div>
       </div>
     </ProtectedRoute>

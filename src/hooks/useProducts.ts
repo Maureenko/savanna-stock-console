@@ -1,14 +1,23 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
+import { useMemo, useSyncExternalStore } from 'react';
 
 import { useDebounce, useURLState } from '@/hooks';
 import { getProducts, getProductsByCategory, searchProducts } from '@/lib/api/products';
+import { applyStockCorrections, stockCorrectionsStore } from '@/lib/stock-corrections-store';
 import type { Product, ProductsResponse } from '@/types/product';
 
 export function useProducts() {
   const { search, category, sortBy, order, skip, limit, stockStatus } = useURLState();
+
+  // Subscribe to stock corrections store to get updates
+  // Returns a version number that changes when corrections are updated
+  const correctionsVersion = useSyncExternalStore(
+    stockCorrectionsStore.subscribe.bind(stockCorrectionsStore),
+    () => stockCorrectionsStore.getVersion(),
+    () => 0
+  );
 
   // Debounce search to avoid excessive API calls while typing
   const debouncedSearch = useDebounce(search, 300);
@@ -39,22 +48,27 @@ export function useProducts() {
     // Stale time from query client defaults (30s)
   });
 
-  // Client-side filtering by stock status (API doesn't support this filter)
+  // Apply local stock corrections and client-side filtering by stock status
+  // Include correctionsVersion in deps to re-run when corrections change
   const filteredData = useMemo(() => {
-    if (!query.data || !stockStatus) {
+    if (!query.data) {
       return query.data;
     }
 
-    const filteredProducts = query.data.products.filter(
-      (product: Product) => product.availabilityStatus === stockStatus
-    );
+    // Apply local stock corrections to products
+    let products = applyStockCorrections(query.data.products);
+
+    // Client-side filtering by stock status (API doesn't support this filter)
+    if (stockStatus) {
+      products = products.filter((product: Product) => product.availabilityStatus === stockStatus);
+    }
 
     return {
       ...query.data,
-      products: filteredProducts,
-      total: filteredProducts.length,
+      products,
+      total: stockStatus ? products.length : query.data.total,
     };
-  }, [query.data, stockStatus]);
+  }, [query.data, stockStatus, correctionsVersion]);
 
   return {
     ...query,

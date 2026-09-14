@@ -14,8 +14,6 @@ interface StatCardProps {
   icon: LucideIcon;
   variant?: StatVariant;
   isLoading?: boolean;
-  onClick?: () => void;
-  isActive?: boolean;
 }
 
 const variantStyles: Record<StatVariant, { text: string; bg: string }> = {
@@ -43,92 +41,53 @@ export function StatCard({
   icon: Icon,
   variant = 'default',
   isLoading,
-  onClick,
-  isActive,
 }: StatCardProps) {
   const styles = variantStyles[variant];
 
   if (isLoading) {
     return (
-      <Card className="border-2 border-savannah-lime/30 bg-gradient-to-br from-background to-savannah-lime/5">
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-20" />
-              <Skeleton className="h-8 w-16" />
+      <Card className="border border-savannah-lime/30 bg-gradient-to-br from-background to-savannah-lime/5">
+        <CardContent className="p-2 sm:p-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="min-w-0 flex-1 space-y-1 sm:space-y-2">
+              <Skeleton className="h-3 w-12 sm:h-4 sm:w-20" />
+              <Skeleton className="h-5 w-8 sm:h-8 sm:w-16" />
             </div>
-            <Skeleton className="h-12 w-12 rounded-xl" />
+            <Skeleton className="h-8 w-8 flex-shrink-0 rounded-lg sm:h-12 sm:w-12 sm:rounded-xl" />
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  const cardContent = (
-    <CardContent className="p-4">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <p className="text-sm font-medium text-muted-foreground transition-colors group-hover:text-foreground">
-            {title}
-          </p>
-          <p
-            className={cn(
-              'text-3xl font-bold tabular-nums transition-transform duration-300',
-              'group-hover:scale-105 origin-left',
-              styles.text
-            )}
-          >
-            {value}
-          </p>
-        </div>
-        <div
-          className={cn(
-            'flex h-12 w-12 items-center justify-center rounded-xl',
-            'bg-savannah-lime/20 text-savannah-lime',
-            'transition-all duration-300',
-            'group-hover:bg-savannah-lime group-hover:text-savannah-purple',
-            'group-hover:scale-110 group-hover:rotate-3'
-          )}
-        >
-          <Icon className="h-6 w-6" aria-hidden="true" />
-        </div>
-      </div>
-    </CardContent>
-  );
-
-  if (onClick) {
-    return (
-      <button
-        onClick={onClick}
-        className={cn(
-          'group w-full text-left rounded-xl border-2 bg-gradient-to-br from-background to-savannah-lime/5',
-          'transition-all duration-300 ease-out',
-          'hover:shadow-lg hover:shadow-savannah-lime/20',
-          'hover:-translate-y-1',
-          'cursor-pointer',
-          'focus:outline-none focus:ring-2 focus:ring-savannah-lime focus:ring-offset-2',
-          isActive
-            ? 'border-savannah-lime ring-2 ring-savannah-lime/30 shadow-lg shadow-savannah-lime/20'
-            : 'border-savannah-lime/30 hover:border-savannah-lime/60'
-        )}
-        aria-pressed={isActive}
-      >
-        {cardContent}
-      </button>
-    );
-  }
-
   return (
     <Card
       className={cn(
-        'group border-2 border-savannah-lime/30 bg-gradient-to-br from-background to-savannah-lime/5',
+        'group border border-savannah-lime/30 bg-gradient-to-br from-background to-savannah-lime/5',
         'transition-all duration-300 ease-out',
-        'hover:border-savannah-lime/60 hover:shadow-lg hover:shadow-savannah-lime/20',
-        'hover:-translate-y-1',
-        'cursor-default'
+        'hover:border-savannah-lime/60 hover:shadow-md hover:shadow-savannah-lime/10'
       )}
     >
-      {cardContent}
+      <CardContent className="p-2 sm:p-4">
+        <div className="flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1 space-y-0.5 sm:space-y-1">
+            <p className="truncate text-[0.65rem] font-medium text-muted-foreground sm:text-sm">
+              {title}
+            </p>
+            <p className={cn('text-lg font-bold tabular-nums sm:text-3xl', styles.text)}>{value}</p>
+          </div>
+          <div
+            className={cn(
+              'flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg sm:h-12 sm:w-12 sm:rounded-xl',
+              'bg-savannah-lime/20 text-savannah-lime',
+              'transition-all duration-300',
+              'group-hover:bg-savannah-lime group-hover:text-savannah-purple'
+            )}
+          >
+            <Icon className="h-4 w-4 sm:h-6 sm:w-6" aria-hidden="true" />
+          </div>
+        </div>
+      </CardContent>
     </Card>
   );
 }

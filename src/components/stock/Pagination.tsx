@@ -1,9 +1,10 @@
 'use client';
 
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { useURLState } from '@/hooks';
+import { cn } from '@/lib/utils';
 
 interface PaginationProps {
   totalItems: number;
@@ -11,21 +12,19 @@ interface PaginationProps {
 }
 
 export function Pagination({ totalItems, totalPages }: PaginationProps) {
-  const { page, setPage, limit, skip } = useURLState();
+  const { page, setPage } = useURLState();
 
-  if (totalPages <= 1) {
-    return null;
-  }
+  if (totalPages <= 1) return null;
 
-  const startItem = skip + 1;
-  const endItem = Math.min(skip + limit, totalItems);
+  const canGoPrevious = page > 1;
+  const canGoNext = page < totalPages;
 
   // Generate page numbers to display
-  const getPageNumbers = (): (number | 'ellipsis')[] => {
+  const getPageNumbers = () => {
     const pages: (number | 'ellipsis')[] = [];
-    const maxVisiblePages = 5;
+    const maxVisible = 3; // Reduced for mobile
 
-    if (totalPages <= maxVisiblePages) {
+    if (totalPages <= maxVisible + 2) {
       // Show all pages if total is small
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
@@ -51,51 +50,70 @@ export function Pagination({ totalItems, totalPages }: PaginationProps) {
       }
 
       // Always show last page
-      pages.push(totalPages);
+      if (!pages.includes(totalPages)) {
+        pages.push(totalPages);
+      }
     }
 
     return pages;
   };
 
-  const pageNumbers = getPageNumbers();
-
   return (
-    <nav
-      role="navigation"
-      aria-label="Pagination"
-      className="mt-8 flex flex-col items-center gap-4 sm:flex-row sm:justify-between"
-    >
-      <p className="text-sm text-muted-foreground">
-        Showing {startItem}-{endItem} of {totalItems} items
+    <div className="mt-3 flex flex-col items-center justify-between gap-2 border-t border-gray-100 pt-3 sm:mt-4 sm:flex-row sm:gap-4 sm:pt-4">
+      {/* Info */}
+      <p className="text-xs text-muted-foreground sm:text-sm">
+        Page {page} of {totalPages}
+        <span className="hidden sm:inline"> ({totalItems} items)</span>
       </p>
 
+      {/* Navigation */}
       <div className="flex items-center gap-1">
+        {/* First page - hidden on mobile */}
         <Button
           variant="outline"
-          size="sm"
-          onClick={() => setPage(page - 1)}
-          disabled={page === 1}
-          aria-label="Go to previous page"
+          size="icon"
+          onClick={() => setPage(1)}
+          disabled={!canGoPrevious}
+          aria-label="Go to first page"
+          className="hidden h-8 w-8 sm:flex"
         >
-          <ChevronLeft className="h-4 w-4" />
-          <span className="sr-only sm:not-sr-only sm:ml-1">Previous</span>
+          <ChevronsLeft className="h-4 w-4" />
         </Button>
 
-        <div className="flex items-center gap-1">
-          {pageNumbers.map((pageNum, index) =>
+        {/* Previous */}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setPage(page - 1)}
+          disabled={!canGoPrevious}
+          aria-label="Go to previous page"
+          className="h-8 w-8"
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+
+        {/* Page numbers */}
+        <div className="flex items-center gap-0.5 sm:gap-1">
+          {getPageNumbers().map((pageNum, index) =>
             pageNum === 'ellipsis' ? (
-              <span key={`ellipsis-${index}`} className="px-2 text-muted-foreground">
-                …
+              <span
+                key={`ellipsis-${index}`}
+                className="flex h-8 w-6 items-center justify-center text-xs text-muted-foreground sm:w-8"
+              >
+                ...
               </span>
             ) : (
               <Button
                 key={pageNum}
-                variant={pageNum === page ? 'default' : 'outline'}
-                size="sm"
+                variant={page === pageNum ? 'default' : 'outline'}
+                size="icon"
                 onClick={() => setPage(pageNum)}
                 aria-label={`Go to page ${pageNum}`}
-                aria-current={pageNum === page ? 'page' : undefined}
-                className="min-w-[36px]"
+                aria-current={page === pageNum ? 'page' : undefined}
+                className={cn(
+                  'h-8 w-8 text-xs sm:text-sm',
+                  page === pageNum && 'pointer-events-none'
+                )}
               >
                 {pageNum}
               </Button>
@@ -103,17 +121,30 @@ export function Pagination({ totalItems, totalPages }: PaginationProps) {
           )}
         </div>
 
+        {/* Next */}
         <Button
           variant="outline"
-          size="sm"
+          size="icon"
           onClick={() => setPage(page + 1)}
-          disabled={page === totalPages}
+          disabled={!canGoNext}
           aria-label="Go to next page"
+          className="h-8 w-8"
         >
-          <span className="sr-only sm:not-sr-only sm:mr-1">Next</span>
           <ChevronRight className="h-4 w-4" />
         </Button>
+
+        {/* Last page - hidden on mobile */}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setPage(totalPages)}
+          disabled={!canGoNext}
+          aria-label="Go to last page"
+          className="hidden h-8 w-8 sm:flex"
+        >
+          <ChevronsRight className="h-4 w-4" />
+        </Button>
       </div>
-    </nav>
+    </div>
   );
 }

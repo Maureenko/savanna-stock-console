@@ -7,5 +7,6 @@ export { SortSelect } from './SortSelect';
 export { StatCard } from './StatCard';
 export { StockCard } from './StockCard';
 export { StockCorrectionForm } from './StockCorrectionForm';
+export { StockCorrectionModal } from './StockCorrectionModal';
 export { StockGrid } from './StockGrid';
 export { StockTable } from './StockTable';

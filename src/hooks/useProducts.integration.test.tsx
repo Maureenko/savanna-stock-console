@@ -14,8 +14,8 @@ import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useProducts } from '@/hooks/useProducts';
-import { server } from '@/test/mocks/server';
 import { generateMockProducts } from '@/test/mocks/handlers';
+import { server } from '@/test/mocks/server';
 
 // Mock Next.js navigation hooks
 vi.mock('next/navigation', () => ({

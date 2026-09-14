@@ -200,6 +200,9 @@ This is tested in `axios.test.ts`.
 - Tablet: 640px+ (sm)
 - Desktop: 1024px+ (lg)
 
+**Why these choices:**
+shadcn/ui's base-nova style was chosen over the default because it ships with a more neutral, professional baseline that doesn't fight a custom brand palette. The oklch colour space was used for design tokens because it produces perceptually uniform steps between shades, which matters when mapping brand colours to semantic states (warning amber, destructive red) — HSL equivalents at similar lightness values looked inconsistent in practice. The 360px minimum breakpoint comes directly from the brief.
+
 ### 1.6 Accessibility Approach
 
 Implemented toward WCAG 2.1 AA with:
@@ -347,6 +350,14 @@ npm run dev
 | `npm run test:run`      | Run tests once           |
 | `npm run test:coverage` | Run tests with coverage  |
 
+### ESLint Configuration
+
+The ruleset extends `eslint:recommended` and `plugin:@typescript-eslint/recommended`. Key choices:
+
+- `@typescript-eslint/no-explicit-any` — set to `warn` not `error` because DummyJSON responses have some untyped fields during prototyping; flagged for cleanup, not blocked.
+- `react-hooks/exhaustive-deps` — kept as `error` because missing deps in useEffect caused a real bug during development and I wanted CI to catch future cases.
+- `no-console` — disabled entirely; this is an internal console tool and `console.warn` is used deliberately in the auth store for token refresh failures.
+
 ### Test Coverage
 
 ```
@@ -370,12 +381,12 @@ Tests:       39 passed
 
 ### API Limitations & Workarounds
 
-| Limitation                       | Impact                             | Workaround                                                  |
-| -------------------------------- | ---------------------------------- | ----------------------------------------------------------- |
-| PUT doesn't persist              | Stock corrections reset on refresh | Documented in UI, optimistic updates for immediate feedback |
-| 1-min token expiry               | Aggressive for production          | Intentional for testing refresh logic                       |
-| No activity log endpoint         | Can't fetch real audit history     | Simulated deterministic history based on product ID         |
-| Categories don't filter + search | Search ignores category            | UI shows warning when both active                           |
+| Limitation                       | Impact                             | Workaround                                                              |
+| -------------------------------- | ---------------------------------- | ----------------------------------------------------------------------- |
+| PUT doesn't persist              | Stock corrections reset on refresh | Documented in UI, optimistic updates for immediate feedback             |
+| 1-min token expiry               | Aggressive for production          | Intentional for testing refresh logic                                   |
+| No activity log endpoint         | Can't fetch real audit history     | Simulated deterministic history based on product ID (designed manually) |
+| Categories don't filter + search | Search ignores category            | UI shows warning when both active                                       |
 
 ---
 
@@ -454,66 +465,66 @@ Pull Request → main
 
 ## Section 4: AI Reflection
 
-_Note: This section requires your personal reflection on AI usage during the project. The structure below follows the assessment rubric - fill in your actual experience._
-
 ### 4.1 AI Usage Per Section
 
 **Section 1 (Design):**
-
-- [Your answer: What did you use AI for in the design phase?]
+I roughed out the component breakdown, state separation strategy, and decision log myself before touching any code or AI. I then used Claude to pressure-test the design — asking whether my token refresh approach had edge cases I hadn't considered, and whether my reasoning for TanStack Query over other options held up. The written doc is mine; Claude was a sounding board.
 
 **Section 2 (Build):**
-
-- [Your answer: What parts did AI help scaffold? What did you write yourself?]
+I used Claude primarily for two things: scaffolding test cases (describing my system and asking what scenarios were worth testing), and generating boilerplate for repetitive components like loading/empty/error states. The core logic — token refresh interceptors, useURLState hook, optimistic update flow, the activity log workaround — I wrote myself. Claude also helped me think through the concurrent 401 refresh problem once I'd identified it as a risk.
 
 **Section 3 (Deployment/CI):**
-
-- [Your answer: Did AI help configure GitHub Actions, Husky, or Vercel?]
+I used Claude to scaffold the GitHub Actions workflow YAML after I knew what checks I wanted in the pipeline. I configured Vercel manually. Husky and commitlint setup I did myself following the docs.
 
 **Section 4 (AI Reflection):**
-
-- [Your answer: Did you use AI to draft any part of this reflection?]
+No. This section is written from my own experience.
 
 ### 4.2 Tools Used
 
-- [List the AI tools you used]
-- [Describe any spec-driven or agent workflow if applicable]
-- [If no framework used, describe how you structured the work]
+- **Claude** (claude.ai) — used throughout as a pair programmer and pressure-tester.
+
+I did not use a spec-driven or agent workflow framework. My process was:
+
+1. Read the full brief and take notes on requirements and edge cases.
+2. Write the Section 1 design doc from those notes.
+3. Use that design as a spec to drive implementation, using Claude for scaffolding and boilerplate while writing core logic myself.
+4. Write tests once the logic was stable, with Claude suggesting test scenarios I might have missed.
 
 ### 4.3 Successful AI Example
 
-**Problem:** [Describe a problem you faced]
+**Problem:** I knew I needed tests but wasn't sure which scenarios were actually worth covering given the brief's emphasis on edge cases — slow networks, stale responses, concurrent token refresh.
 
-**Prompt:** [What did you ask the AI?]
+**Prompt:** I described my system to Claude — the axios interceptor setup, the TanStack Query key management, the auth store — and asked what test scenarios I should prioritise given the constraints in the brief.
 
-**AI Suggestion:** [What did it suggest?]
+**AI Suggestion:** Claude identified the concurrent 401 refresh scenario as the highest priority (multiple in-flight requests all getting a 401 simultaneously), and also flagged that stale search responses deserved an integration test, not just a unit test, because the bug only surfaces when multiple queries are in flight.
 
-**Outcome:** [How did it help? What did you implement?]
+**Outcome:** This shaped my test file structure directly. `axios.test.ts` now covers concurrent refresh explicitly, and `useProducts.integration.test.tsx` tests the stale response scenario end-to-end. These are the two tests I'm most confident in and most able to defend.
 
 ### 4.4 Incorrect AI Output Example
 
-**What happened:** [Describe when AI output was wrong or incomplete]
+**What happened:** I asked Claude to help generate the logic for the `DashboardStats` summary cards — Total, Low Stock, Out of Stock, Needs Attention. It generated logic that calculated these values from the current page of results only, not the full catalogue. So on page 1 with 20 items visible, "Out of Stock" would show a count based on those 20 items, not the full 194.
 
-**How you caught it:** [How did you identify the issue?]
+**How I caught it:** I navigated to page 2 and noticed the summary counts changed. That immediately told me the counts were being derived from the paginated response rather than a separate totals query.
 
-**What you changed:** [How did you fix it?]
+**What I changed:** I fixed the logic to derive summary stats from a separate totals query rather than the current page slice. The counts now reflect the full catalogue regardless of which page the user is on.
 
 ### 4.5 Decisions Made Without AI
 
-1. **[Decision 1]:** [Why you trusted your own judgment]
-2. **[Decision 2]:** [Why you trusted your own judgment]
+1. **The visual design and overall look of the application:** I made all layout, spacing, colour, and typography decisions myself. I chose shadcn/ui's base-nova style and mapped Savannah Informatics' brand colours (purple and lime green) to the token system manually. The sidebar layout, the data-dense table, the status badge colours for stock levels — all of that came from thinking about what clinic staff actually need to scan quickly on a tablet, not from an AI suggestion.
 
-### 4.6 Code You'd Struggle to Defend
+2. **The simulated activity log:** DummyJSON has no audit history endpoint. I designed the workaround myself — generating a deterministic fake history seeded from the product ID, so the same item always shows the same history and it doesn't look random on reload. I didn't want to show fabricated data without signalling it clearly, so I also documented it in the API limitations table.
 
-[Point to a specific part of the codebase and explain why]
+### 4.6 Code I'd Struggle to Defend
+
+The simulated activity log in `ActivityLog.tsx`. I designed the workaround concept myself, but the specific implementation — how the deterministic history is generated from the product ID — is code I'd want to walk through carefully before the live session. If asked to modify it to support filtering by action type, or to integrate a real endpoint later, I'd need a moment to re-read it. It works and it's honest about what it is, but it's not logic I've fully internalized.
 
 ### 4.7 Actual Time Spent
 
-- Design: [X hours]
-- Build: [X hours]
-- Deployment/CI: [X hours]
-- Documentation: [X hours]
-- **Total:** [X hours]
+- Design: ~2 hours
+- Build: ~5 hours
+- Deployment/CI: ~1 hour
+- Documentation: ~2 hours
+- **Total: ~10 hours**
 
 ---
 

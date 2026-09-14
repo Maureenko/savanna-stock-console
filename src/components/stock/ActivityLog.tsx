@@ -54,7 +54,7 @@ function ActivityEntry({
         {/* Avatar */}
         <div
           className={cn(
-            'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[10px] font-medium text-white',
+            'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[0.625rem] font-medium text-white',
             avatarColor
           )}
           aria-hidden="true"
@@ -67,7 +67,7 @@ function ActivityEntry({
           <div className="flex items-center gap-1 min-w-0">
             <span className="truncate text-xs font-medium">{entry.userName}</span>
             {isNew && (
-              <span className="text-[9px] bg-savannah-lime text-savannah-purple px-1 rounded font-medium">
+              <span className="text-[0.5625rem] bg-savannah-lime text-savannah-purple px-1 rounded font-medium">
                 NEW
               </span>
             )}
@@ -112,7 +112,7 @@ function ActivityEntry({
         <div className="flex items-center gap-2">
           <span className="font-medium text-foreground">{entry.userName}</span>
           {isNew && (
-            <span className="text-[10px] bg-savannah-lime text-savannah-purple px-1.5 py-0.5 rounded font-medium">
+            <span className="text-[0.625rem] bg-savannah-lime text-savannah-purple px-1.5 py-0.5 rounded font-medium">
               NEW
             </span>
           )}
@@ -191,7 +191,7 @@ export function ActivityLog({ productId, currentStock, compact }: ActivityLogPro
             <History className="h-3.5 w-3.5" aria-hidden="true" />
             Activity Log
           </h3>
-          <span className="text-[10px] text-muted-foreground">{activities.length} entries</span>
+          <span className="text-[0.625rem] text-muted-foreground">{activities.length} entries</span>
         </div>
         <div className="flex-1 overflow-y-auto px-3">
           <div className="divide-y divide-border">

@@ -67,7 +67,7 @@ export function LoginHero() {
 
       {/* Bottom section */}
       <div className="relative z-10">
-        <p className="text-sm text-white/60">Clinic Stock Management Console</p>
+        <p className="text-sm text-white/60">StockCare Management Console</p>
       </div>
 
       {/* Decorative elements */}

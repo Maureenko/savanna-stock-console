@@ -32,7 +32,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden">
+    <main className="relative min-h-screen min-h-dvh w-full overflow-hidden">
       {/* Background Image */}
       <Image
         src="/PillsLogin.webp"
@@ -44,21 +44,30 @@ export default function LoginPage() {
       />
 
       {/* Dark overlay for better contrast */}
-      <div className="absolute inset-0 bg-black/20" />
+      <div className="absolute inset-0 bg-black/30 sm:bg-black/20" />
 
-      {/* Content container - positioned to align form to top right */}
-      <div className="relative z-10 flex min-h-screen items-start justify-end p-4 pt-8 sm:p-8 sm:pt-12 md:p-12 md:pt-16 lg:p-16 lg:pt-20">
-        <div className="w-full max-w-md">
+      {/* Content container */}
+      <div className="relative z-10 flex min-h-screen min-h-dvh items-center justify-center p-4 sm:p-6 lg:items-start lg:justify-end lg:p-16 lg:pt-20">
+        <div className="w-full max-w-sm sm:max-w-md">
           {/* Login Form Card */}
-          <div className="rounded-xl bg-white/95 p-6 shadow-2xl backdrop-blur-sm sm:p-8">
-            <div className="mb-6 text-center">
-              <h2 className="text-xl font-semibold text-gray-900">Welcome back</h2>
-              <p className="mt-1 text-sm text-gray-600">Sign in to access your inventory</p>
+          <div className="rounded-xl bg-white/95 p-5 shadow-2xl backdrop-blur-sm sm:p-8">
+            <div className="mb-5 flex flex-col items-center text-center sm:mb-6">
+              <div className="relative mb-1 h-20 w-40 sm:h-24 sm:w-48">
+                <Image
+                  src="/logo.png"
+                  alt="StockCare Logo"
+                  fill
+                  className="object-contain"
+                  sizes="192px"
+                  priority
+                />
+              </div>
+              <p className="text-sm text-gray-600">Sign in to access your inventory</p>
             </div>
 
             <LoginForm />
 
-            <p className="mt-6 text-center text-xs text-gray-500">
+            <p className="mt-5 text-center text-xs text-gray-500 sm:mt-6">
               By signing in, you agree to our terms of service and privacy policy.
             </p>
           </div>
