@@ -4,20 +4,24 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { toast } from 'sonner';
 
+import { useAuth } from '@/components/auth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { activityStore, createActivityEntry } from '@/lib/activity-store';
 import { updateProduct } from '@/lib/api/products';
 import type { Product } from '@/types/product';
 
 interface StockCorrectionFormProps {
   product: Product;
+  compact?: boolean;
 }
 
-export function StockCorrectionForm({ product }: StockCorrectionFormProps) {
+export function StockCorrectionForm({ product, compact }: StockCorrectionFormProps) {
   const [newStock, setNewStock] = useState<string>(String(product.stock));
   const [validationError, setValidationError] = useState<string | null>(null);
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const mutation = useMutation({
     mutationFn: (stock: number) => updateProduct(product.id, { stock }),
@@ -45,11 +49,17 @@ export function StockCorrectionForm({ product }: StockCorrectionFormProps) {
         description: 'Please try again.',
       });
     },
-    onSuccess: (updatedProduct) => {
+    onSuccess: (updatedProduct, newStockValue) => {
       // Update with actual server response
       queryClient.setQueryData(['product', product.id], updatedProduct);
       // Also invalidate the products list
       queryClient.invalidateQueries({ queryKey: ['products'] });
+
+      // Add entry to activity log
+      const userName = user ? `${user.firstName} ${user.lastName}` : 'Current User';
+      const entry = createActivityEntry(product.id, product.stock, newStockValue, userName);
+      activityStore.addEntry(product.id, entry);
+
       toast.success('Stock updated', {
         description: `Stock count set to ${updatedProduct.stock} units.`,
       });
@@ -79,6 +89,41 @@ export function StockCorrectionForm({ product }: StockCorrectionFormProps) {
 
     mutation.mutate(stockValue);
   };
+
+  if (compact) {
+    return (
+      <form onSubmit={handleSubmit} className="space-y-2">
+        <Label htmlFor="stock-correction" className="text-xs font-medium">
+          New Stock Count
+        </Label>
+        <div className="flex gap-2">
+          <Input
+            id="stock-correction"
+            type="number"
+            min="0"
+            value={newStock}
+            onChange={(e) => {
+              setNewStock(e.target.value);
+              setValidationError(null);
+            }}
+            placeholder="Enter count"
+            aria-invalid={!!validationError}
+            aria-describedby={validationError ? 'stock-error' : undefined}
+            disabled={mutation.isPending}
+            className="h-8 text-sm"
+          />
+          <Button type="submit" disabled={mutation.isPending} size="sm" className="h-8">
+            {mutation.isPending ? '...' : 'Update'}
+          </Button>
+        </div>
+        {validationError && (
+          <p id="stock-error" className="text-xs text-destructive">
+            {validationError}
+          </p>
+        )}
+      </form>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="mt-4 border-t pt-4">
