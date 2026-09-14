@@ -1,7 +1,10 @@
+export { ActivityLog } from './ActivityLog';
 export { CategorySelect } from './CategorySelect';
+export { DashboardStats } from './DashboardStats';
 export { Pagination } from './Pagination';
 export { SearchInput } from './SearchInput';
 export { SortSelect } from './SortSelect';
+export { StatCard } from './StatCard';
 export { StockCard } from './StockCard';
 export { StockCorrectionForm } from './StockCorrectionForm';
 export { StockGrid } from './StockGrid';

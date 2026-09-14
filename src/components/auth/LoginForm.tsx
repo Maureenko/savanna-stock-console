@@ -5,7 +5,6 @@ import { useState } from 'react';
 
 import { useAuth } from '@/components/auth/AuthProvider';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -39,64 +38,69 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-md">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold">Sign in</CardTitle>
-        <CardDescription>Enter your credentials to access the stock console</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <div role="alert" className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-              {error}
-            </div>
-          )}
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <div
+          role="alert"
+          className="rounded-lg bg-red-50 p-3 text-sm text-red-600 border border-red-200"
+        >
+          {error}
+        </div>
+      )}
 
-          <div className="space-y-2">
-            <Label htmlFor="username">Username</Label>
-            <Input
-              id="username"
-              type="text"
-              placeholder="Enter your username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-              disabled={isSubmitting}
-              autoComplete="username"
-              aria-describedby={error ? 'login-error' : undefined}
-            />
-          </div>
+      <div className="space-y-2">
+        <Label htmlFor="username" className="text-gray-700">
+          Username
+        </Label>
+        <Input
+          id="username"
+          type="text"
+          placeholder="Enter your username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+          disabled={isSubmitting}
+          autoComplete="username"
+          aria-describedby={error ? 'login-error' : undefined}
+          className="h-11 bg-white border-gray-300 focus:border-primary focus:ring-primary"
+        />
+      </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={isSubmitting}
-              autoComplete="current-password"
-            />
-          </div>
+      <div className="space-y-2">
+        <Label htmlFor="password" className="text-gray-700">
+          Password
+        </Label>
+        <Input
+          id="password"
+          type="password"
+          placeholder="Enter your password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          disabled={isSubmitting}
+          autoComplete="current-password"
+          className="h-11 bg-white border-gray-300 focus:border-primary focus:ring-primary"
+        />
+      </div>
 
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? (
-              <span className="flex items-center gap-2">
-                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                Signing in...
-              </span>
-            ) : (
-              'Sign in'
-            )}
-          </Button>
+      <Button type="submit" className="h-11 w-full" disabled={isSubmitting}>
+        {isSubmitting ? (
+          <span className="flex items-center gap-2">
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            Signing in...
+          </span>
+        ) : (
+          'Sign in'
+        )}
+      </Button>
 
-          <p className="text-center text-sm text-muted-foreground">
-            Test credentials: emilys / emilyspass
-          </p>
-        </form>
-      </CardContent>
-    </Card>
+      <div className="rounded-lg bg-gray-50 p-3 border border-gray-200">
+        <p className="text-center text-sm text-gray-600">
+          <span className="font-medium">Test credentials:</span>{' '}
+          <code className="rounded bg-gray-200 px-1.5 py-0.5 text-xs font-mono">emilys</code> /{' '}
+          <code className="rounded bg-gray-200 px-1.5 py-0.5 text-xs font-mono">emilyspass</code>
+        </p>
+      </div>
+    </form>
   );
 }

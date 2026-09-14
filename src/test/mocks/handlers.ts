@@ -1,157 +1,182 @@
-import { http, HttpResponse } from 'msw';
+import { delay, http, HttpResponse } from 'msw';
 
-const BASE_URL = 'https://dummyjson.com';
+import type { ProductsResponse } from '@/types/product';
 
-// Mock product data
-const mockProducts = [
-  {
-    id: 1,
-    title: 'Test Product 1',
-    description: 'Test description',
-    price: 9.99,
-    stock: 100,
-    category: 'groceries',
-    thumbnail: 'https://example.com/image.jpg',
-    brand: 'TestBrand',
+/**
+ * Generate mock products for a search query
+ */
+function generateMockProducts(query: string, count: number = 5): ProductsResponse {
+  const products = Array.from({ length: count }, (_, i) => ({
+    id: i + 1,
+    title: `${query} Product ${i + 1}`,
+    description: `This is a test product matching "${query}"`,
+    price: 10 + i * 5,
+    discountPercentage: 0,
     rating: 4.5,
+    stock: 50 + i * 10,
+    brand: 'Test Brand',
+    category: 'test-category',
+    thumbnail: 'https://example.com/thumb.jpg',
+    images: ['https://example.com/img.jpg'],
     availabilityStatus: 'In Stock',
-  },
-  {
-    id: 2,
-    title: 'Test Product 2',
-    description: 'Another description',
-    price: 19.99,
-    stock: 5,
-    category: 'beauty',
-    thumbnail: 'https://example.com/image2.jpg',
-    brand: 'TestBrand2',
-    rating: 3.8,
-    availabilityStatus: 'Low Stock',
-  },
-];
+    sku: `SKU-${query.toUpperCase()}-${i}`,
+    minimumOrderQuantity: 1,
+    shippingInformation: 'Ships in 2-3 days',
+    warrantyInformation: '1 year warranty',
+    returnPolicy: '30 day returns',
+    dimensions: { width: 10, height: 10, depth: 10 },
+    weight: 1,
+    tags: ['test'],
+    reviews: [],
+    meta: {
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      barcode: '123456789',
+      qrCode: 'https://example.com/qr',
+    },
+  }));
 
-// Mock auth tokens
-let currentToken = 'test-access-token';
-const refreshToken = 'test-refresh-token';
+  return {
+    products,
+    total: count,
+    skip: 0,
+    limit: 10,
+  };
+}
 
+/**
+ * Default handlers for MSW
+ * These can be overridden in individual tests using server.use()
+ */
 export const handlers = [
-  // Auth: Login
-  http.post(`${BASE_URL}/auth/login`, async ({ request }) => {
-    const body = (await request.json()) as { username: string; password: string };
-
-    if (body.username === 'emilys' && body.password === 'emilyspass') {
-      return HttpResponse.json({
-        accessToken: currentToken,
-        refreshToken: refreshToken,
-        id: 1,
-        username: 'emilys',
-        email: 'emily.johnson@example.com',
-        firstName: 'Emily',
-        lastName: 'Johnson',
-        image: 'https://example.com/avatar.jpg',
-      });
-    }
-
-    return HttpResponse.json({ message: 'Invalid credentials' }, { status: 401 });
-  }),
-
-  // Auth: Refresh token
-  http.post(`${BASE_URL}/auth/refresh`, async ({ request }) => {
-    const body = (await request.json()) as { refreshToken: string };
-
-    if (body.refreshToken === refreshToken) {
-      currentToken = 'new-access-token';
-      return HttpResponse.json({
-        accessToken: currentToken,
-        refreshToken: refreshToken,
-      });
-    }
-
-    return HttpResponse.json({ message: 'Invalid refresh token' }, { status: 401 });
-  }),
-
-  // Products: Get all
-  http.get(`${BASE_URL}/products`, ({ request }) => {
+  // Products search endpoint
+  http.get('https://dummyjson.com/products/search', async ({ request }) => {
     const url = new URL(request.url);
-    const limit = Number(url.searchParams.get('limit')) || 10;
-    const skip = Number(url.searchParams.get('skip')) || 0;
+    const query = url.searchParams.get('q') || '';
 
-    return HttpResponse.json({
-      products: mockProducts.slice(skip, skip + limit),
-      total: mockProducts.length,
-      skip,
-      limit,
-    });
+    // Default: respond immediately
+    return HttpResponse.json(generateMockProducts(query));
   }),
 
-  // Products: Search
-  http.get(`${BASE_URL}/products/search`, ({ request }) => {
-    const url = new URL(request.url);
-    const q = url.searchParams.get('q') || '';
-    const limit = Number(url.searchParams.get('limit')) || 10;
-    const skip = Number(url.searchParams.get('skip')) || 0;
-
-    const filtered = mockProducts.filter((p) => p.title.toLowerCase().includes(q.toLowerCase()));
-
-    return HttpResponse.json({
-      products: filtered.slice(skip, skip + limit),
-      total: filtered.length,
-      skip,
-      limit,
-    });
+  // Products list endpoint
+  http.get('https://dummyjson.com/products', async () => {
+    return HttpResponse.json(generateMockProducts('default', 10));
   }),
 
-  // Products: Get by category
-  http.get(`${BASE_URL}/products/category/:category`, ({ params, request }) => {
-    const { category } = params;
-    const url = new URL(request.url);
-    const limit = Number(url.searchParams.get('limit')) || 10;
-    const skip = Number(url.searchParams.get('skip')) || 0;
-
-    const filtered = mockProducts.filter((p) => p.category === category);
-
-    return HttpResponse.json({
-      products: filtered.slice(skip, skip + limit),
-      total: filtered.length,
-      skip,
-      limit,
-    });
+  // Products by category endpoint
+  http.get('https://dummyjson.com/products/category/:category', async ({ params }) => {
+    const category = params.category as string;
+    return HttpResponse.json(generateMockProducts(category, 8));
   }),
 
-  // Products: Get single
-  http.get(`${BASE_URL}/products/:id`, ({ params }) => {
+  // Single product endpoint
+  http.get('https://dummyjson.com/products/:id', async ({ params }) => {
     const id = Number(params.id);
-    const product = mockProducts.find((p) => p.id === id);
-
-    if (product) {
-      return HttpResponse.json(product);
-    }
-
-    return HttpResponse.json({ message: 'Product not found' }, { status: 404 });
+    return HttpResponse.json({
+      id,
+      title: `Product ${id}`,
+      description: 'Test product description',
+      price: 99.99,
+      discountPercentage: 10,
+      rating: 4.5,
+      stock: 50,
+      brand: 'Test Brand',
+      category: 'test-category',
+      thumbnail: 'https://example.com/thumb.jpg',
+      images: ['https://example.com/img.jpg'],
+      availabilityStatus: 'In Stock',
+      sku: `SKU-${id}`,
+      minimumOrderQuantity: 1,
+      shippingInformation: 'Ships in 2-3 days',
+      warrantyInformation: '1 year warranty',
+      returnPolicy: '30 day returns',
+      dimensions: { width: 10, height: 10, depth: 10 },
+      weight: 1,
+      tags: ['test'],
+      reviews: [],
+      meta: {
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        barcode: '123456789',
+        qrCode: 'https://example.com/qr',
+      },
+    });
   }),
 
-  // Products: Update (stock correction)
-  http.put(`${BASE_URL}/products/:id`, async ({ params, request }) => {
-    const id = Number(params.id);
-    const body = (await request.json()) as { stock: number };
-    const product = mockProducts.find((p) => p.id === id);
-
-    if (product) {
-      // DummyJSON returns partial data on PUT
-      return HttpResponse.json({
-        id,
-        stock: body.stock,
-      });
-    }
-
-    return HttpResponse.json({ message: 'Product not found' }, { status: 404 });
-  }),
-
-  // Categories
-  http.get(`${BASE_URL}/products/categories`, () => {
+  // Categories endpoint
+  http.get('https://dummyjson.com/products/categories', async () => {
     return HttpResponse.json([
-      { slug: 'groceries', name: 'Groceries', url: '' },
-      { slug: 'beauty', name: 'Beauty', url: '' },
+      { slug: 'electronics', name: 'Electronics', url: '' },
+      { slug: 'clothing', name: 'Clothing', url: '' },
+      { slug: 'furniture', name: 'Furniture', url: '' },
     ]);
   }),
+
+  // Update product endpoint
+  http.put('https://dummyjson.com/products/:id', async ({ params, request }) => {
+    const id = Number(params.id);
+    const body = (await request.json()) as Record<string, unknown>;
+    return HttpResponse.json({
+      id,
+      title: `Product ${id}`,
+      description: 'Test product description',
+      price: 99.99,
+      discountPercentage: 10,
+      rating: 4.5,
+      stock: body.stock ?? 50,
+      brand: 'Test Brand',
+      category: 'test-category',
+      thumbnail: 'https://example.com/thumb.jpg',
+      images: ['https://example.com/img.jpg'],
+      availabilityStatus: 'In Stock',
+      sku: `SKU-${id}`,
+      minimumOrderQuantity: 1,
+      shippingInformation: 'Ships in 2-3 days',
+      warrantyInformation: '1 year warranty',
+      returnPolicy: '30 day returns',
+      dimensions: { width: 10, height: 10, depth: 10 },
+      weight: 1,
+      tags: ['test'],
+      reviews: [],
+      meta: {
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        barcode: '123456789',
+        qrCode: 'https://example.com/qr',
+      },
+    });
+  }),
+
+  // Auth endpoints
+  http.post('https://dummyjson.com/auth/login', async () => {
+    return HttpResponse.json({
+      id: 1,
+      username: 'testuser',
+      email: 'test@example.com',
+      firstName: 'Test',
+      lastName: 'User',
+      accessToken: 'mock-access-token',
+      refreshToken: 'mock-refresh-token',
+    });
+  }),
+
+  http.post('https://dummyjson.com/auth/refresh', async () => {
+    return HttpResponse.json({
+      accessToken: 'new-mock-access-token',
+      refreshToken: 'new-mock-refresh-token',
+    });
+  }),
+
+  http.get('https://dummyjson.com/auth/me', async () => {
+    return HttpResponse.json({
+      id: 1,
+      username: 'testuser',
+      email: 'test@example.com',
+      firstName: 'Test',
+      lastName: 'User',
+    });
+  }),
 ];
+
+// Export helper for creating delayed search responses
+export { generateMockProducts, delay };

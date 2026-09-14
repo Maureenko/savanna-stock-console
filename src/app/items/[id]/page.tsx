@@ -5,9 +5,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useSearchParams } from 'next/navigation';
 
-import { ProtectedRoute } from '@/components/auth';
 import { ErrorState } from '@/components/common';
-import { StockCorrectionForm } from '@/components/stock';
+import { DashboardLayout } from '@/components/layout';
+import { ActivityLog, StockCorrectionForm } from '@/components/stock';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,17 +30,19 @@ function ItemDetailContent() {
 
   if (isError || !product) {
     return (
-      <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-        <Link href={backLink}>
-          <Button variant="ghost" className="mb-6">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to list
-          </Button>
-        </Link>
-        <ErrorState
-          message={error instanceof Error ? error.message : 'Failed to load product details'}
-          onRetry={() => refetch()}
-        />
+      <div className="flex min-h-[50vh] items-center justify-center p-4">
+        <div className="w-full max-w-md">
+          <Link href={backLink}>
+            <Button variant="ghost" className="mb-4">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to list
+            </Button>
+          </Link>
+          <ErrorState
+            message={error instanceof Error ? error.message : 'Failed to load product details'}
+            onRetry={() => refetch()}
+          />
+        </div>
       </div>
     );
   }
@@ -49,40 +51,44 @@ function ItemDetailContent() {
   const isOutOfStock = product.availabilityStatus === 'Out of Stock';
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-      <Link href={backLink}>
-        <Button variant="ghost" className="mb-6">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to list
-        </Button>
-      </Link>
+    <div className="min-h-full bg-savannah-lime/10 p-4">
+      {/* Header */}
+      <div className="mb-3">
+        <Link href={backLink}>
+          <Button variant="ghost" size="sm">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to list
+          </Button>
+        </Link>
+      </div>
 
-      <div className="grid gap-8 lg:grid-cols-2">
-        {/* Product Images */}
-        <div className="space-y-4">
-          <div className="relative aspect-square overflow-hidden rounded-lg bg-muted">
+      {/* Main Content - Centered */}
+      <div className="mx-auto flex max-w-6xl flex-wrap gap-4 lg:flex-nowrap">
+        {/* Left: Product Image */}
+        <div className="flex w-full flex-col gap-2 sm:w-40 lg:w-44">
+          <div className="relative aspect-square overflow-hidden rounded-lg bg-white shadow-sm">
             <Image
               src={product.images?.[0] || product.thumbnail}
               alt={product.title}
               fill
               className="object-cover"
               priority
-              sizes="(max-width: 1024px) 100vw, 50vw"
+              sizes="176px"
             />
           </div>
           {product.images && product.images.length > 1 && (
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-4 gap-1">
               {product.images.slice(0, 4).map((image, index) => (
                 <div
                   key={index}
-                  className="relative aspect-square overflow-hidden rounded-md bg-muted"
+                  className="relative aspect-square overflow-hidden rounded bg-white"
                 >
                   <Image
                     src={image}
                     alt={`${product.title} - Image ${index + 1}`}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 1024px) 25vw, 12.5vw"
+                    sizes="40px"
                   />
                 </div>
               ))}
@@ -90,107 +96,95 @@ function ItemDetailContent() {
           )}
         </div>
 
-        {/* Product Info */}
-        <div className="space-y-6">
-          <div>
-            <p className="mb-2 text-sm capitalize text-muted-foreground">
-              {product.category?.replace(/-/g, ' ')} {product.brand && `• ${product.brand}`}
+        {/* Center: Product Info */}
+        <div className="flex-1 rounded-xl bg-white p-4 shadow-sm">
+          {/* Title and Category */}
+          <div className="mb-2">
+            <p className="text-xs capitalize text-muted-foreground">
+              {product.category?.replace(/-/g, ' ')}
             </p>
-            <h1 className="text-3xl font-bold">{product.title}</h1>
+            <h1 className="text-lg font-bold">{product.title}</h1>
           </div>
 
-          <div className="flex items-center gap-4">
-            <span className="text-3xl font-bold">${product.price?.toFixed(2) ?? '0.00'}</span>
+          {/* Price and Rating */}
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <span className="text-lg font-bold">${product.price?.toFixed(2) ?? '0.00'}</span>
             {product.discountPercentage && product.discountPercentage > 0 && (
-              <Badge variant="secondary">{product.discountPercentage.toFixed(0)}% off</Badge>
+              <Badge variant="secondary" className="text-xs">
+                {product.discountPercentage.toFixed(0)}% off
+              </Badge>
+            )}
+            {product.rating && (
+              <div className="flex items-center gap-1">
+                <div className="flex items-center">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star
+                      key={i}
+                      className={`h-3 w-3 ${
+                        i < Math.round(product.rating)
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : 'text-muted'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-xs text-muted-foreground">({product.rating.toFixed(1)})</span>
+              </div>
             )}
           </div>
 
-          {product.rating && (
-            <div className="flex items-center gap-2">
-              <div className="flex items-center">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-5 w-5 ${
-                      i < Math.round(product.rating)
-                        ? 'fill-yellow-400 text-yellow-400'
-                        : 'text-muted'
-                    }`}
-                  />
-                ))}
-              </div>
-              <span className="text-sm text-muted-foreground">({product.rating.toFixed(1)})</span>
-            </div>
+          {/* Description */}
+          {product.description && (
+            <p className="mb-2 text-sm text-muted-foreground">{product.description}</p>
           )}
 
-          {product.description && <p className="text-muted-foreground">{product.description}</p>}
+          {/* Quick Info Grid */}
+          <div className="mb-2 flex flex-wrap gap-2 text-xs">
+            {product.sku && (
+              <div className="rounded bg-muted/50 px-2 py-1">
+                <span className="text-muted-foreground">SKU:</span>{' '}
+                <span className="font-medium">{product.sku}</span>
+              </div>
+            )}
+            {product.brand && (
+              <div className="rounded bg-muted/50 px-2 py-1">
+                <span className="text-muted-foreground">Brand:</span>{' '}
+                <span className="font-medium">{product.brand}</span>
+              </div>
+            )}
+            {product.shippingInformation && (
+              <div className="rounded bg-muted/50 px-2 py-1">
+                <span className="text-muted-foreground">Shipping:</span>{' '}
+                <span className="font-medium">{product.shippingInformation}</span>
+              </div>
+            )}
+          </div>
 
-          {/* Stock Card - Prominent for clinic use case */}
-          <Card className="border-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-lg">Stock Information</CardTitle>
+          {/* Stock Status Bar */}
+          <div className="flex items-center gap-2 rounded-lg bg-muted/30 p-2">
+            <span className="text-sm text-muted-foreground">Stock:</span>
+            <span className="text-xl font-bold tabular-nums">{product.stock}</span>
+            <Badge variant={isOutOfStock ? 'destructive' : isLowStock ? 'warning' : 'success'}>
+              {product.availabilityStatus}
+            </Badge>
+          </div>
+        </div>
+
+        {/* Right: Stock Management & Activity */}
+        <div className="flex w-full flex-col gap-3 lg:w-64">
+          {/* Stock Correction Card */}
+          <Card className="border-2 border-primary/20" id="stock">
+            <CardHeader className="p-3 pb-2">
+              <CardTitle className="text-sm">Stock Correction</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="font-medium">Current Stock</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl font-bold">{product.stock}</span>
-                  {product.availabilityStatus && (
-                    <Badge
-                      variant={isOutOfStock ? 'destructive' : isLowStock ? 'secondary' : 'default'}
-                      className={
-                        !isOutOfStock && !isLowStock
-                          ? 'bg-green-100 text-green-800 hover:bg-green-100'
-                          : ''
-                      }
-                    >
-                      {product.availabilityStatus}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-              <div className="text-sm text-muted-foreground">
-                {product.sku && <p>SKU: {product.sku}</p>}
-                {product.minimumOrderQuantity && (
-                  <p>Min Order: {product.minimumOrderQuantity} units</p>
-                )}
-              </div>
-
-              {/* Stock Correction Form */}
-              <StockCorrectionForm product={product} />
+            <CardContent className="p-3 pt-0">
+              <StockCorrectionForm product={product} compact />
             </CardContent>
           </Card>
 
-          {/* Additional Info - only show if data exists */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            {product.shippingInformation && (
-              <div>
-                <h3 className="mb-2 font-semibold">Shipping</h3>
-                <p className="text-sm text-muted-foreground">{product.shippingInformation}</p>
-              </div>
-            )}
-            {product.warrantyInformation && (
-              <div>
-                <h3 className="mb-2 font-semibold">Warranty</h3>
-                <p className="text-sm text-muted-foreground">{product.warrantyInformation}</p>
-              </div>
-            )}
-            {product.returnPolicy && (
-              <div>
-                <h3 className="mb-2 font-semibold">Return Policy</h3>
-                <p className="text-sm text-muted-foreground">{product.returnPolicy}</p>
-              </div>
-            )}
-            {product.dimensions && (
-              <div>
-                <h3 className="mb-2 font-semibold">Dimensions</h3>
-                <p className="text-sm text-muted-foreground">
-                  {product.dimensions.width} × {product.dimensions.height} ×{' '}
-                  {product.dimensions.depth} cm
-                </p>
-              </div>
-            )}
+          {/* Activity Log */}
+          <div className="max-h-64 overflow-hidden rounded-xl bg-white shadow-sm">
+            <ActivityLog productId={product.id} currentStock={product.stock} compact />
           </div>
         </div>
       </div>
@@ -200,26 +194,21 @@ function ItemDetailContent() {
 
 function ItemDetailSkeleton() {
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-      <Skeleton className="mb-6 h-10 w-32" />
-      <div className="grid gap-8 lg:grid-cols-2">
-        <div className="space-y-4">
+    <div className="min-h-full bg-savannah-lime/10 p-4">
+      <Skeleton className="mb-3 h-8 w-32" />
+      <div className="mx-auto flex max-w-6xl gap-4">
+        <div className="w-44">
           <Skeleton className="aspect-square w-full rounded-lg" />
-          <div className="grid grid-cols-4 gap-2">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="aspect-square rounded-md" />
-            ))}
-          </div>
         </div>
-        <div className="space-y-6">
-          <div>
-            <Skeleton className="mb-2 h-4 w-32" />
-            <Skeleton className="h-10 w-3/4" />
-          </div>
-          <Skeleton className="h-10 w-32" />
-          <Skeleton className="h-4 w-40" />
-          <Skeleton className="h-24 w-full" />
-          <Skeleton className="h-40 w-full rounded-lg" />
+        <div className="flex-1 rounded-xl bg-white p-4">
+          <Skeleton className="mb-2 h-4 w-24" />
+          <Skeleton className="mb-2 h-5 w-3/4" />
+          <Skeleton className="mb-2 h-5 w-32" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+        <div className="flex w-64 flex-col gap-3">
+          <Skeleton className="h-28 rounded-lg" />
+          <Skeleton className="h-48 rounded-lg" />
         </div>
       </div>
     </div>
@@ -228,8 +217,8 @@ function ItemDetailSkeleton() {
 
 export default function ItemDetailPage() {
   return (
-    <ProtectedRoute>
+    <DashboardLayout>
       <ItemDetailContent />
-    </ProtectedRoute>
+    </DashboardLayout>
   );
 }

@@ -1,13 +1,14 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 import { useDebounce, useURLState } from '@/hooks';
 import { getProducts, getProductsByCategory, searchProducts } from '@/lib/api/products';
-import type { ProductsResponse } from '@/types/product';
+import type { Product, ProductsResponse } from '@/types/product';
 
 export function useProducts() {
-  const { search, category, sortBy, order, skip, limit } = useURLState();
+  const { search, category, sortBy, order, skip, limit, stockStatus } = useURLState();
 
   // Debounce search to avoid excessive API calls while typing
   const debouncedSearch = useDebounce(search, 300);
@@ -38,11 +39,29 @@ export function useProducts() {
     // Stale time from query client defaults (30s)
   });
 
+  // Client-side filtering by stock status (API doesn't support this filter)
+  const filteredData = useMemo(() => {
+    if (!query.data || !stockStatus) {
+      return query.data;
+    }
+
+    const filteredProducts = query.data.products.filter(
+      (product: Product) => product.availabilityStatus === stockStatus
+    );
+
+    return {
+      ...query.data,
+      products: filteredProducts,
+      total: filteredProducts.length,
+    };
+  }, [query.data, stockStatus]);
+
   return {
     ...query,
+    data: filteredData,
     // Convenience flags
-    isEmpty: query.data?.products.length === 0 && !query.isLoading,
-    totalItems: query.data?.total ?? 0,
-    totalPages: query.data ? Math.ceil(query.data.total / limit) : 0,
+    isEmpty: filteredData?.products.length === 0 && !query.isLoading,
+    totalItems: filteredData?.total ?? 0,
+    totalPages: filteredData ? Math.ceil(filteredData.total / limit) : 0,
   };
 }

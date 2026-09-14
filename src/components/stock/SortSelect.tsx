@@ -1,5 +1,6 @@
 'use client';
 
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -32,17 +33,22 @@ export function SortSelect() {
   };
 
   return (
-    <Select value={currentValue} onValueChange={handleValueChange}>
-      <SelectTrigger className="w-full sm:w-[160px]" aria-label="Sort by">
-        <SelectValue placeholder="Sort by..." />
-      </SelectTrigger>
-      <SelectContent>
-        {SORT_OPTIONS.map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <div className="space-y-1.5">
+      <Label htmlFor="sort-select" className="text-sm font-medium text-gray-700">
+        Sort by
+      </Label>
+      <Select value={currentValue} onValueChange={handleValueChange}>
+        <SelectTrigger id="sort-select" className="w-full sm:w-[160px]">
+          <SelectValue placeholder="Sort by..." />
+        </SelectTrigger>
+        <SelectContent>
+          {SORT_OPTIONS.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }

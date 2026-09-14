@@ -2,99 +2,85 @@
 
 import { Suspense } from 'react';
 
-import { ProtectedRoute, useAuth } from '@/components/auth';
 import { EmptyState, ErrorState, LoadingState } from '@/components/common';
+import { DashboardLayout } from '@/components/layout';
 import {
-  CategorySelect,
+  DashboardStats,
   Pagination,
   SearchInput,
   SortSelect,
   StockTable,
 } from '@/components/stock';
-import { Button } from '@/components/ui/button';
 import { useProducts, useURLState } from '@/hooks';
 
 function StockListContent() {
-  const { user, logout } = useAuth();
-  const { resetFilters, search, category } = useURLState();
+  const { resetFilters, search, category, stockStatus } = useURLState();
   const { data, isLoading, isError, error, refetch, isEmpty, isFetching, totalItems, totalPages } =
     useProducts();
 
-  const hasActiveFilters = search || category;
+  const hasActiveFilters = search || category || stockStatus;
 
   return (
-    <div className="min-h-screen p-4 sm:p-6 lg:p-8">
-      <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold">Stock Console</h1>
-          {user && (
-            <p className="text-muted-foreground">
-              Welcome, {user.firstName} {user.lastName}
-            </p>
-          )}
-        </div>
-        <Button variant="outline" onClick={logout}>
-          Sign out
-        </Button>
-      </header>
+    <div className="min-h-full bg-savannah-lime/10 p-4 sm:p-6">
+      {/* Dashboard Stats - fetches all products for accurate counts */}
+      <DashboardStats />
 
-      <main>
-        {/* Search and Filters */}
-        <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center">
+      {/* Search and Filters Card */}
+      <div className="mb-4 rounded-xl bg-white p-4 shadow-sm">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
           <SearchInput />
-          <div className="flex gap-2">
-            <CategorySelect />
+          <div className="flex gap-4">
             <SortSelect />
           </div>
         </div>
-
         {/* Status bar */}
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mt-3 flex items-center justify-between border-t border-gray-100 pt-3">
           <p className="text-sm text-muted-foreground">
             {totalItems} items
             {search && ` • Searching: "${search}"`}
             {category && ` • ${category.replace(/-/g, ' ')}`}
+            {stockStatus && ` • Status: ${stockStatus}`}
           </p>
           {/* Show subtle loading indicator when refetching */}
           {isFetching && !isLoading && (
             <span className="text-sm text-muted-foreground">Updating...</span>
           )}
         </div>
+      </div>
 
-        {/* Loading State */}
-        {isLoading && <LoadingState />}
+      {/* Loading State */}
+      {isLoading && <LoadingState />}
 
-        {/* Error State */}
-        {isError && (
-          <ErrorState
-            message={error instanceof Error ? error.message : 'Failed to load products'}
-            onRetry={() => refetch()}
-          />
-        )}
+      {/* Error State */}
+      {isError && (
+        <ErrorState
+          message={error instanceof Error ? error.message : 'Failed to load products'}
+          onRetry={() => refetch()}
+        />
+      )}
 
-        {/* Empty State */}
-        {!isLoading && !isError && isEmpty && (
-          <EmptyState onReset={hasActiveFilters ? resetFilters : undefined} />
-        )}
+      {/* Empty State */}
+      {!isLoading && !isError && isEmpty && (
+        <EmptyState onReset={hasActiveFilters ? resetFilters : undefined} />
+      )}
 
-        {/* Product Table */}
-        {!isLoading && !isError && data && data.products.length > 0 && (
-          <>
-            <StockTable products={data.products} />
-            <Pagination totalItems={totalItems} totalPages={totalPages} />
-          </>
-        )}
-      </main>
+      {/* Product Table Card */}
+      {!isLoading && !isError && data && data.products.length > 0 && (
+        <div className="rounded-xl bg-white p-4 shadow-sm">
+          <StockTable products={data.products} />
+          <Pagination totalItems={totalItems} totalPages={totalPages} />
+        </div>
+      )}
     </div>
   );
 }
 
 export default function ItemsPage() {
   return (
-    <ProtectedRoute>
+    <DashboardLayout>
       <Suspense fallback={<LoadingState />}>
         <StockListContent />
       </Suspense>
-    </ProtectedRoute>
+    </DashboardLayout>
   );
 }

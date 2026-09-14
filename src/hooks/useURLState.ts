@@ -9,6 +9,7 @@ export interface URLState {
   sortBy: string;
   order: 'asc' | 'desc';
   page: number;
+  stockStatus: string;
 }
 
 const DEFAULT_STATE: URLState = {
@@ -17,6 +18,7 @@ const DEFAULT_STATE: URLState = {
   sortBy: 'title',
   order: 'asc',
   page: 1,
+  stockStatus: '',
 };
 
 const PAGE_SIZE = 10;
@@ -33,6 +35,7 @@ export function useURLState() {
     const sortBy = searchParams.get('sortBy') || DEFAULT_STATE.sortBy;
     const orderParam = searchParams.get('order');
     const order = orderParam === 'asc' || orderParam === 'desc' ? orderParam : DEFAULT_STATE.order;
+    const stockStatus = searchParams.get('stockStatus') || DEFAULT_STATE.stockStatus;
 
     // Parse and validate page number
     const pageParam = searchParams.get('page');
@@ -44,7 +47,7 @@ export function useURLState() {
       }
     }
 
-    return { search, category, sortBy, order, page };
+    return { search, category, sortBy, order, page, stockStatus };
   }, [searchParams]);
 
   // Update URL with new params (shallow routing)
@@ -106,6 +109,14 @@ export function useURLState() {
     [updateURL]
   );
 
+  const setStockStatus = useCallback(
+    (stockStatus: string) => {
+      // Reset to page 1 when stock status changes
+      updateURL({ stockStatus, page: 1 });
+    },
+    [updateURL]
+  );
+
   // Reset all filters to defaults
   const resetFilters = useCallback(() => {
     router.push(pathname, { scroll: false });
@@ -122,6 +133,7 @@ export function useURLState() {
     setCategory,
     setSort,
     setPage,
+    setStockStatus,
     resetFilters,
     updateURL,
   };

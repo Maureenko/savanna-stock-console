@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useURLState } from '@/hooks';
 
 export function SearchInput() {
@@ -60,31 +61,36 @@ export function SearchInput() {
   }, []);
 
   return (
-    <div className="relative flex-1">
-      <Search
-        className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-        aria-hidden="true"
-      />
-      <Input
-        type="search"
-        placeholder="Search items..."
-        value={inputValue}
-        onChange={(e) => handleChange(e.target.value)}
-        className="pl-10 pr-10"
-        aria-label="Search items"
-      />
-      {inputValue && (
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 p-0"
-          onClick={handleClear}
-          aria-label="Clear search"
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      )}
+    <div className="flex-1 space-y-1.5">
+      <Label htmlFor="search-input" className="text-sm font-medium text-gray-700">
+        Search
+      </Label>
+      <div className="relative">
+        <Search
+          className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+          aria-hidden="true"
+        />
+        <Input
+          id="search-input"
+          type="search"
+          placeholder="Search items..."
+          value={inputValue}
+          onChange={(e) => handleChange(e.target.value)}
+          className="pl-10 pr-10"
+        />
+        {inputValue && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 p-0"
+            onClick={handleClear}
+            aria-label="Clear search"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 }
